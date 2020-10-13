@@ -17,7 +17,7 @@ from usaspending_api.common.sqs.sqs_handler import (
 )
 from usaspending_api.common.helpers.sql_helpers import ordered_dictionary_fetcher
 from usaspending_api.common.helpers.text_helpers import generate_random_string
-from usaspending_api.etl.es_etl_helpers import create_aliases
+from usaspending_api.etl.elasticsearch_loader_helpers import create_aliases
 from usaspending_api.etl.management.commands.es_configure import retrieve_index_template
 
 
@@ -34,6 +34,12 @@ class TestElasticSearchIndex:
         self.client = Elasticsearch([settings.ES_HOSTNAME], timeout=settings.ES_TIMEOUT)
         self.template = retrieve_index_template("{}_template".format(self.index_type[:-1]))
         self.mappings = json.loads(self.template)["mappings"]
+        self.etl_config = {
+            "index_name": self.index_name,
+            "query_alias_prefix": self.alias_prefix,
+            "verbose": False,
+            "write_alias": self.index_name + "-alias",
+        }
 
     def delete_index(self):
         self.client.indices.delete(self.index_name, ignore_unavailable=True)
@@ -46,7 +52,7 @@ class TestElasticSearchIndex:
         """
         self.delete_index()
         self.client.indices.create(index=self.index_name, body=self.template)
-        create_aliases(self.client, self.index_name, self.index_type, True)
+        create_aliases(self.client, self.etl_config)
         self._add_contents(**options)
 
     def _add_contents(self, **options):

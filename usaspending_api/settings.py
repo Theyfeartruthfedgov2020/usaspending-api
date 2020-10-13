@@ -23,6 +23,7 @@ DOWNLOAD_TIMEOUT_MIN_LIMIT = 10
 
 # Default timeout for SQL statements in Django
 DEFAULT_DB_TIMEOUT_IN_SECONDS = int(os.environ.get("DEFAULT_DB_TIMEOUT_IN_SECONDS", 0))
+DOWNLOAD_DB_TIMEOUT_IN_HOURS = 4
 CONNECTION_MAX_SECONDS = 10
 
 API_MAX_DATE = "2024-09-30"  # End of FY2024
@@ -413,3 +414,7 @@ SPAGHETTI_SAUCE = {
     "exclude": {},
     "show_proxy": False,
 }
+
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SECURE = True
