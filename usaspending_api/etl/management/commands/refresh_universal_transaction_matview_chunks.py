@@ -141,7 +141,7 @@ CREATE MATERIALIZED VIEW universal_transaction_matview_{current_chunk} AS
 """
 
 REFRESH_MATVIEW_SQL = """
-REFRESH MATERIALIZED VIEW universal_transaction_test_matview_{current_chunk};
+REFRESH MATERIALIZED VIEW universal_transaction_matview_{current_chunk};
 """
 
 RECREATE_TABLE_SQL = """
@@ -150,7 +150,11 @@ CREATE TABLE universal_transaction_test AS TABLE universal_transaction_matview W
 """
 
 INSERT_INTO_TABLE_SQL = """
-INSERT INTO universal_transaction_test SELECT * FROM universal_transaction_test_matview_{current_chunk}
+INSERT INTO universal_transaction_test SELECT * FROM universal_transaction_matview_{current_chunk}
+"""
+
+REMOVE_MATVIEW_DATA_SQL = """
+REFRESH MATERIALIZED VIEW universal_transaction_matview_{current_chunk} WITH NO DATA;
 """
 
 TABLE_INDEX_SQL = """
@@ -180,6 +184,12 @@ class Command(BaseCommand):
         parser.add_argument("--refresh", action="store_true", help="Refreshes Matview")
         parser.add_argument("--recreate", action="store_true", help="Recreates Matview")
         parser.add_argument("--update-table", action="store_true", help="Truncates the aggregate table and inserts data from all matviews")
+        parser.add_argument(
+            "--keep-old-data",
+            action="store_true",
+            default=False,
+            help="Indicates whether or not to drop old table and matviews at end of command",
+        )
 
     def handle(self, *args, **options):
         thread_count = options["thread_count"]
@@ -203,6 +213,10 @@ class Command(BaseCommand):
                 self.insert_table_data(thread_count)
             with Timer("Creating table indexes"):
                 self.create_indexes()
+
+        if not options["keep_old_data"]:
+            with Timer("Removing old data"):
+                self.remove_old_data(thread_count)
 
     def create_matviews(self, thread_count):
         loop = asyncio.new_event_loop()
@@ -277,3 +291,8 @@ class Command(BaseCommand):
 
         loop.run_until_complete(asyncio.gather(*tasks))
         loop.close()
+
+    def remove_old_data(self, chunk_count):
+        with connection.cursor() as cursor:
+            for current_chunk in range(0, chunk_count):
+                cursor.execute(REMOVE_MATVIEW_DATA_SQL.format(current_chunk=current_chunk))
