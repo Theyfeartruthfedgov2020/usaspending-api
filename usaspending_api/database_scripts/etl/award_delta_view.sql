@@ -249,7 +249,7 @@ LEFT JOIN (
         ON faba.submission_id = sa.submission_id
         AND sa.reporting_period_start >= '2020-04-01'
     INNER JOIN dabs_submission_window_schedule AS closed_periods
-        ON   closed_periods.period_start_date >= '2020-04-01' AND closed_periods.submission_reveal_date < now()
+        ON   closed_periods.period_start_date >= '2020-04-01' AND closed_periods.submission_reveal_date < '2022-02-10'
         AND sa.submission_window_id = closed_periods.id
     WHERE faba.award_id IS NOT NULL
     GROUP BY
