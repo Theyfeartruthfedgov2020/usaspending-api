@@ -74,9 +74,9 @@ BROKER_AGENCY_BUCKET_NAME = ""
 #  places with the same string value in deployed envs
 # Merging together into a new variable: DELETED_TRANSACTION_JOURNAL_FILES
 # After the new variable reaches master, work with OPS to discard old variables
-FPDS_BUCKET_NAME = ""
-DELETED_TRANSACTIONS_S3_BUCKET_NAME = ""
-DELETED_TRANSACTION_JOURNAL_FILES = ""
+FPDS_BUCKET_NAME = "dti-fpds-deleted-records-nonprod"
+DELETED_TRANSACTIONS_S3_BUCKET_NAME = "dti-fpds-deleted-records-nonprod"
+DELETED_TRANSACTION_JOURNAL_FILES = "dti-fpds-deleted-records-nonprod"
 
 if not FPDS_BUCKET_NAME:
     FPDS_BUCKET_NAME = os.environ.get("FPDS_BUCKET_NAME")
